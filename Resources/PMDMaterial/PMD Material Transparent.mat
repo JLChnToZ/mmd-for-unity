@@ -4,8 +4,9 @@
 Material:
   serializedVersion: 6
   m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
   m_Name: PMD Material Transparent
   m_Shader: {fileID: 4800000, guid: d9a28a4fb26b1bf4aa2074b1b9e5a000, type: 3}
   m_ShaderKeywords: 
@@ -41,6 +42,7 @@ Material:
     - _AmbColor: {r: 0, g: 0, b: 0, a: 1}
     - _Color: {r: 0.84393066, g: 0.8589086, b: 0.113923594, a: 1}
     - _SpecularColor: {r: 0, g: 0, b: 0, a: 1}
+  m_BuildTextureStacks: []
 --- !u!1002 &2100001
 EditorExtensionImpl:
   serializedVersion: 6

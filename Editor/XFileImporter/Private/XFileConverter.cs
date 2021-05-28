@@ -11,6 +11,7 @@ namespace xfile {
 		string filePath;
 		string folderPath;
 		string fileName;
+		string localPath;
 		StreamReader sr;
 		
 		MeshSection meshSection;

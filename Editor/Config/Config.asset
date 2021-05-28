@@ -2,13 +2,14 @@
 %TAG !u! tag:unity3d.com,2011:
 --- !u!114 &11400000
 MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
+  m_ObjectHideFlags: 8
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b1cb97ed3a451a247ba8d40b230bc4bc, type: 3}
+  m_Script: {fileID: 11500000, guid: 2a5c068502d47404eb5edac8f8998e17, type: 3}
   m_Name: Config
   m_EditorClassIdentifier: 
   inspector_config:
@@ -16,11 +17,11 @@ MonoBehaviour:
     use_vmd_preload: 0
   pmd_config:
     shader_type: 2
-    animation_type: 2
+    use_mecanim: 0
     rigidFlag: 1
     use_ik: 1
     scale: 0.085
-    is_pmx_base_import: 1
+    is_pmx_base_import: 0
   vmd_config:
-    createAnimationFile: 1
-    interpolationQuality: 1
+    createAnimationFile: 0
+    interpolationQuality: 0

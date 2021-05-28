@@ -4,8 +4,9 @@
 Material:
   serializedVersion: 6
   m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 0}
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
   m_Name: PMD Material with Outline
   m_Shader: {fileID: 4800000, guid: 1caff3dbcad030e45946b79da5247af8, type: 3}
   m_ShaderKeywords: 
@@ -43,6 +44,7 @@ Material:
     - _Color: {r: 0.11564884, g: 0.3061467, b: 0.6743529, a: 1}
     - _OutlineColor: {r: 0, g: 0, b: 0, a: 1}
     - _SpecularColor: {r: 0.16904736, g: 0.16904736, b: 0.16904736, a: 1}
+  m_BuildTextureStacks: []
 --- !u!1002 &2100001
 EditorExtensionImpl:
   serializedVersion: 6

@@ -697,7 +697,7 @@ namespace MMD
 			GameObject[] rigid = new GameObject[list.rigidbody_count];
 			for (int i = 0; i < list.rigidbody_count; i++)
 			{
-				rigid[i] = new GameObject("r_" + list.rigidbody[i].rigidbody_name);
+				rigid[i] = new GameObject("r" + list.rigidbody[i].rigidbody_name);
 				//rigid[i].AddComponent<Rigidbody>();		// 剛体本体にはrigidbodyは適用しない
 
 				// 各種Colliderの設定
@@ -874,12 +874,14 @@ namespace MMD
 			if (joint.spring_rot.x != 0f)
 			{
 				drive = new JointDrive();
+				drive.mode = JointDriveMode.PositionAndVelocity;
 				drive.positionSpring = joint.spring_rot.x;
 				conf.angularXDrive = drive;
 			}
 			if (joint.spring_rot.y != 0f || joint.spring_rot.z != 0f)
 			{
 				drive = new JointDrive();
+				drive.mode = JointDriveMode.PositionAndVelocity;
 				drive.positionSpring = (joint.spring_rot.y + joint.spring_rot.z) * 0.5f;
 				conf.angularYZDrive = drive;
 			}
