@@ -1,6 +1,8 @@
-# MMD For Unity
-
-=============
+<p align=center>
+  <img src="https://github.com/sammwyy/mmd-for-unity/blob/master/logo.png">
+  <h1 align=center>MMD for Unity</h1>
+  <p align=center>Compatible with the latest versions of Unity</p>
+</p>
 
 ## What is it?
 
