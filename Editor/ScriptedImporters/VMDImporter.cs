@@ -8,12 +8,13 @@ using MMD;
 
 [ScriptedImporter(1, ".vmd")]
 public class VMDImporter : ScriptedImporter {
-    public GameObject pmdPrefab;
+    public MMDEngine pmdPrefab;
     public VMDImportConfig importConfig;
 
     public override void OnImportAsset(AssetImportContext ctx) {
         if (importConfig == null) importConfig = Config.LoadAndCreate().vmd_config.Clone();
+        if (pmdPrefab == null) return;
         var agent = new MotionAgent(ctx.assetPath);
-        agent.CreateAnimationClip(pmdPrefab, false, importConfig.interpolationQuality, ctx);
+        agent.CreateAnimationClip(pmdPrefab.gameObject, false, importConfig.interpolationQuality, ctx);
     }
 }
