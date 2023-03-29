@@ -1,5 +1,10 @@
 ﻿using UnityEngine;
 using UnityEditor;
+#if UNITY_2020_2_OR_NEWER
+using UnityEditor.AssetImporters;
+#else
+using UnityEditor.Experimental.AssetImporters;
+#endif
 using System.Collections.Generic;
 
 namespace MMD {
@@ -36,7 +41,7 @@ namespace MMD {
 		/// <param name='use_ik'>IKを使用するか</param>
 		/// <param name='scale'>スケール</param>
 		/// <param name='is_pmx_base_import'>PMX Baseでインポートするか</param>
-		public void CreatePrefab(PMDConverter.ShaderType shader_type, bool use_rigidbody, PMXConverter.AnimationType animation_type, bool use_ik, float scale, bool is_pmx_base_import) {
+		public void CreatePrefab(PMDConverter.ShaderType shader_type, bool use_rigidbody, PMXConverter.AnimationType animation_type, bool use_ik, float scale, bool is_pmx_base_import, AssetImportContext ctx) {
 			GameObject game_object;
 			string prefab_path;
 			if (is_pmx_base_import) {
@@ -54,10 +59,10 @@ namespace MMD {
 				}
 				header_ = pmx_format.header;
 				//ゲームオブジェクトの作成
-				game_object = PMXConverter.CreateGameObject(pmx_format, use_rigidbody, animation_type, use_ik, scale);
+				game_object = PMXConverter.CreateGameObject(pmx_format, use_rigidbody, animation_type, use_ik, scale, ctx);
 	
 				// プレファブパスの設定
-				prefab_path = pmx_format.meta_header.folder + "/" + pmx_format.meta_header.name + ".prefab";
+				prefab_path = ctx != null ? pmx_format.meta_header.name : pmx_format.meta_header.folder + "/" + pmx_format.meta_header.name + ".prefab";
 			} else {
 				//PMXエクスポーターを使用しない
 				//PMDファイルのインポート
@@ -75,16 +80,21 @@ namespace MMD {
 	
 				//ゲームオブジェクトの作成
 				bool use_mecanim = PMXConverter.AnimationType.LegacyAnimation == animation_type;
-				game_object = PMDConverter.CreateGameObject(pmd_format, shader_type, use_rigidbody, use_mecanim, use_ik, scale);
+				game_object = PMDConverter.CreateGameObject(pmd_format, shader_type, use_rigidbody, use_mecanim, use_ik, scale, ctx);
 	
 				// プレファブパスの設定
-				prefab_path = pmd_format.folder + "/" + pmd_format.name + ".prefab";
+				prefab_path = ctx != null ? pmd_format.name : pmd_format.folder + "/" + pmd_format.name + ".prefab";
 			}
 			// プレファブ化
-			PrefabUtility.CreatePrefab(prefab_path, game_object, ReplacePrefabOptions.ConnectToPrefab);
+			if (ctx != null) {
+				ctx.AddObjectToAsset(prefab_path, game_object);
+				ctx.SetMainObject(game_object);
+			} else {
+				PrefabUtility.CreatePrefab(prefab_path, game_object, ReplacePrefabOptions.ConnectToPrefab);
 			
-			// アセットリストの更新
-			AssetDatabase.Refresh();
+				// アセットリストの更新
+				AssetDatabase.Refresh();
+			}
 		}
 
 		/// <summary>

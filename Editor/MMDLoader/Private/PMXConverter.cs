@@ -1,5 +1,10 @@
 ﻿using UnityEngine;
 using UnityEditor;
+#if UNITY_2020_2_OR_NEWER
+using UnityEditor.AssetImporters;
+#else
+using UnityEditor.Experimental.AssetImporters;
+#endif
 using System.Collections.Generic;
 using System.Linq;
 using MMD.PMX;
@@ -25,10 +30,10 @@ namespace MMD
 		/// <param name='animation_type'>アニメーションタイプ</param>
 		/// <param name='use_ik'>IKを使用するか</param>
 		/// <param name='scale'>スケール</param>
-		public static GameObject CreateGameObject(PMXFormat format, bool use_rigidbody, AnimationType animation_type, bool use_ik, float scale) {
+		public static GameObject CreateGameObject(PMXFormat format, bool use_rigidbody, AnimationType animation_type, bool use_ik, float scale, AssetImportContext ctx) {
 			GameObject result;
 			using (PMXConverter converter = new PMXConverter()) {
-				result = converter.CreateGameObject_(format, use_rigidbody, animation_type, use_ik, scale);
+				result = converter.CreateGameObject_(format, use_rigidbody, animation_type, use_ik, scale, ctx);
 			}
 			return result;
 		}
@@ -59,7 +64,7 @@ namespace MMD
 		/// <param name='animation_type'>アニメーションタイプ</param>
 		/// <param name='use_ik'>IKを使用するか</param>
 		/// <param name='scale'>スケール</param>
-		private GameObject CreateGameObject_(PMXFormat format, bool use_rigidbody, AnimationType animation_type, bool use_ik, float scale) {
+		private GameObject CreateGameObject_(PMXFormat format, bool use_rigidbody, AnimationType animation_type, bool use_ik, float scale, AssetImportContext ctx) {
 			format_ = format;
 			use_ik_ = use_ik;
 			scale_ = scale;
@@ -74,8 +79,8 @@ namespace MMD
 			engine.render_queue_value = c_render_queue_transparent;
 			
 			MeshCreationInfo[] creation_info = CreateMeshCreationInfo();				// メッシュを作成する為の情報を作成
-			Mesh[] mesh = CreateMesh(creation_info);									// メッシュの生成・設定
-			Material[][] materials = CreateMaterials(creation_info);					// マテリアルの生成・設定
+			Mesh[] mesh = CreateMesh(creation_info, ctx);									// メッシュの生成・設定
+			Material[][] materials = CreateMaterials(creation_info, ctx);					// マテリアルの生成・設定
 			GameObject[] bones = CreateBones();											// ボーンの生成・設定
 			SkinnedMeshRenderer[] renderers = BuildingBindpose(mesh, materials, bones);	// バインドポーズの作成
 			CreateMorph(mesh, materials, bones, renderers, creation_info);				// モーフの生成・設定
@@ -91,7 +96,7 @@ namespace MMD
 	
 			// 剛体関連
 			if (use_rigidbody) {
-				GameObject[] rigids = CreateRigids();
+				GameObject[] rigids = CreateRigids(ctx);
 				AssignRigidbodyToBone(bones, rigids);
 				SetRigidsSettings(bones, rigids);
 				GameObject[] joints = CreateJoints(rigids);
@@ -118,11 +123,15 @@ namespace MMD
 				default:
 					throw new System.ArgumentException();
 				}
-				
-				string path = format_.meta_header.folder + "/";
-				string name = GetFilePathString(format_.meta_header.name);
-				string file_name = path + name + ".avatar.asset";
-				avatar_setting.CreateAsset(file_name);
+
+				if (ctx != null) {
+					avatar_setting.CreateAsset(format_.meta_header.name + ".avatar.asset", ctx);
+				} else {
+					string path = format_.meta_header.folder + "/";
+					string name = GetFilePathString(format_.meta_header.name);
+					string file_name = path + name + ".avatar.asset";
+					avatar_setting.CreateAsset(file_name, null);
+				}
 			} else {
 				root_game_object_.AddComponent<Animation>();	// アニメーション追加
 			}
@@ -345,14 +354,14 @@ namespace MMD
 		/// </summary>
 		/// <returns>メッシュ</returns>
 		/// <param name='creation_info'>メッシュ作成情報</param>
-		Mesh[] CreateMesh(MeshCreationInfo[] creation_info)
+		Mesh[] CreateMesh(MeshCreationInfo[] creation_info, AssetImportContext ctx)
 		{
 			Mesh[] result = new Mesh[creation_info.Length];
 			for (int i = 0, i_max = creation_info.Length; i < i_max; ++i) {
 				Mesh mesh = new Mesh();
 				EntryAttributesForMesh(mesh, creation_info[i]);
 				SetSubMesh(mesh, creation_info[i]);
-				CreateAssetForMesh(mesh, i);
+				CreateAssetForMesh(mesh, i, ctx);
 				result[i] = mesh;
 			}
 			return result;
@@ -438,8 +447,13 @@ namespace MMD
 		/// </summary>
 		/// <param name='mesh'>対象メッシュ</param>
 		/// <param name='index'>メッシュインデックス</param>
-		void CreateAssetForMesh(Mesh mesh, int index)
+		void CreateAssetForMesh(Mesh mesh, int index, AssetImportContext ctx)
 		{
+			if (ctx != null)
+			{
+				ctx.AddObjectToAsset($"{index}_{format_.meta_header.name}", mesh);
+				return;
+			}
 			string path = format_.meta_header.folder + "/Meshes/";
 			if (!System.IO.Directory.Exists(path)) { 
 				AssetDatabase.CreateFolder(format_.meta_header.folder, "Meshes");
@@ -455,17 +469,17 @@ namespace MMD
 		/// </summary>
 		/// <returns>マテリアル</returns>
 		/// <param name='creation_info'>メッシュ作成情報</param>
-		Material[][] CreateMaterials(MeshCreationInfo[] creation_info)
+		Material[][] CreateMaterials(MeshCreationInfo[] creation_info, AssetImportContext ctx)
 		{
 			// 適当なフォルダに投げる
 			string path = format_.meta_header.folder + "/Materials/";
-			if (!System.IO.Directory.Exists(path)) { 
+			if (ctx == null && !System.IO.Directory.Exists(path)) { 
 				AssetDatabase.CreateFolder(format_.meta_header.folder, "Materials");
 			}
 			
 			//全マテリアルを作成
 			Material[] materials = EntryAttributesForMaterials();
-			CreateAssetForMaterials(materials);
+			CreateAssetForMaterials(materials, ctx);
 
 			//メッシュ単位へ振り分け
 			Material[][] result = new Material[creation_info.Length][];
@@ -942,13 +956,18 @@ namespace MMD
 		/// マテリアルをProjectに登録する
 		/// </summary>
 		/// <param name='materials'>対象マテリアル</param>
-		void CreateAssetForMaterials(Material[] materials) {
+		void CreateAssetForMaterials(Material[] materials, AssetImportContext ctx) {
 			string path = format_.meta_header.folder + "/Materials/";
 
 			for (int i = 0, i_max = materials.Length; i < i_max; ++i) {
 				string name = GetFilePathString(format_.material_list.material[i].name);
-				string file_name = path + i.ToString() + "_" + name + ".asset";
-				AssetDatabase.CreateAsset(materials[i], file_name);
+				if (ctx != null) {
+					ctx.AddObjectToAsset($"{i}_{name}", materials[i]);
+					ctx.SetMainObject(materials[i]);
+				} else {
+					string file_name = $"{path}{i}_{name}.asset";
+					AssetDatabase.CreateAsset(materials[i], file_name);
+				}
 			}
 		}
 		
@@ -1470,7 +1489,7 @@ namespace MMD
 			mesh_root_transform.parent = root_game_object_.transform;
 
 			//モデルルート取得
-			Transform model_root_transform = root_game_object_.transform.FindChild("Model");
+			Transform model_root_transform = root_game_object_.transform.Find("Model");
 			//ボーン共通データ
 			Matrix4x4[] bindposes = bones.Select(x=>x.transform.worldToLocalMatrix).ToArray();
 			Transform[] bones_transform = bones.Select(x=>x.transform).ToArray();
@@ -1566,9 +1585,9 @@ namespace MMD
 		/// 剛体作成
 		/// </summary>
 		/// <returns>剛体</returns>
-		GameObject[] CreateRigids()
+		GameObject[] CreateRigids(AssetImportContext ctx)
 		{
-			if (!System.IO.Directory.Exists(System.IO.Path.Combine(format_.meta_header.folder, "Physics"))) {
+			if (ctx == null && !System.IO.Directory.Exists(System.IO.Path.Combine(format_.meta_header.folder, "Physics"))) {
 				AssetDatabase.CreateFolder(format_.meta_header.folder, "Physics");
 			}
 			
@@ -1576,7 +1595,7 @@ namespace MMD
 			GameObject[] result = format_.rigidbody_list.rigidbody.Select(x=>ConvertRigidbody(x)).ToArray();
 			for (uint i = 0, i_max = (uint)result.Length; i < i_max; ++i) {
 				// マテリアルの設定
-				result[i].GetComponent<Collider>().material = CreatePhysicMaterial(format_.rigidbody_list.rigidbody, i);
+				result[i].GetComponent<Collider>().material = CreatePhysicMaterial(format_.rigidbody_list.rigidbody, i, ctx);
 				
 			}
 			
@@ -1654,17 +1673,22 @@ namespace MMD
 		/// <returns>物理素材</returns>
 		/// <param name='rigidbody'>PMX用剛体データ</param>
 		/// <param name='index'>剛体インデックス</param>
-		PhysicMaterial CreatePhysicMaterial(PMXFormat.Rigidbody[] rigidbodys, uint index)
+		PhysicMaterial CreatePhysicMaterial(PMXFormat.Rigidbody[] rigidbodys, uint index, AssetImportContext ctx)
 		{
 			PMXFormat.Rigidbody rigidbody = rigidbodys[index];
-			PhysicMaterial material = new PhysicMaterial(format_.meta_header.name + "_r" + rigidbody.name);
-			material.bounciness = rigidbody.recoil;
-			material.staticFriction = rigidbody.friction;
-			material.dynamicFriction = rigidbody.friction;
-			
-			string name = GetFilePathString(rigidbody.name);
-			string file_name = format_.meta_header.folder + "/Physics/" + index.ToString() + "_" + name + ".asset";
-			AssetDatabase.CreateAsset(material, file_name);
+      var material = new PhysicMaterial($"{format_.meta_header.name}_r{rigidbody.name}") {
+        bounciness = rigidbody.recoil,
+        staticFriction = rigidbody.friction,
+        dynamicFriction = rigidbody.friction
+      };
+
+      if (ctx != null) {
+				ctx.AddObjectToAsset(rigidbody.name, material);
+			} else {
+				string name = GetFilePathString(rigidbody.name);
+				string file_name = format_.meta_header.folder + "/Physics/" + index.ToString() + "_" + name + ".asset";
+				AssetDatabase.CreateAsset(material, file_name);
+			}
 			return material;
 		}
 

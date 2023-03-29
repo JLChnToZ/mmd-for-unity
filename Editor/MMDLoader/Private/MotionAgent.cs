@@ -1,5 +1,10 @@
 ﻿using UnityEngine;
 using UnityEditor;
+#if UNITY_2020_2_OR_NEWER
+using UnityEditor.AssetImporters;
+#else
+using UnityEditor.Experimental.AssetImporters;
+#endif
 using System.Collections.Generic;
 using System.IO;
 
@@ -26,7 +31,7 @@ namespace MMD {
 		/// <param name='assign_pmd'>使用するPMDのGameObject</param>
 		/// <param name='create_asset'>Prefab外に作成するか(true:Prefab外に作成, false:Prefab内蔵)</param>
 		/// <param name='interpolationQuality'>補完曲線品質</param>
-		public void CreateAnimationClip(GameObject assign_pmd, bool create_asset, int interpolationQuality) {
+		public void CreateAnimationClip(GameObject assign_pmd, bool create_asset, int interpolationQuality, AssetImportContext ctx) {
 			//VMDファイルのインポート
 			if (null == format_) {
 				//まだ読み込んでいないなら読むこむ
@@ -39,7 +44,10 @@ namespace MMD {
 
 			// ここで登録
 			//anim.AddClip(animation_clip, animation_clip.name);
-
+			if (ctx != null) {
+				ctx.AddObjectToAsset(animation_clip.name, animation_clip);
+				return;
+			}
 			if (create_asset) {
 				// フォルダを生成してアニメーションのファイルを書き出す
 				string prefab_folder = AssetDatabase.GetAssetPath(assign_pmd);

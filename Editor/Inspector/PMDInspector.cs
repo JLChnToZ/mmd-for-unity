@@ -67,7 +67,7 @@ namespace MMD
                                             , pmd_config.use_ik
                                             , pmd_config.scale
                                             , pmd_config.is_pmx_base_import
-                                            );
+                                            , null);
                     message = "Loading done.";
                 }
             }

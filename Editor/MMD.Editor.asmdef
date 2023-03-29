@@ -1,0 +1,18 @@
+{
+    "name": "MMD.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:57a6bb24a53eb64478eec4ac91c6ced5"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

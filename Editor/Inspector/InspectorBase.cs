@@ -35,7 +35,7 @@ namespace MMD
 
 		static void Update()
 		{
-			if (Selection.objects.Length != 0)
+			/*if (Selection.objects.Length != 0)
 			{
 				string path = AssetDatabase.GetAssetPath(Selection.activeObject);
 				string extension = Path.GetExtension(path).ToLower();
@@ -48,7 +48,7 @@ namespace MMD
 				{
 					SetupScriptableObject<VMDScriptableObject>(path);
 				}
-			}
+			}*/
 		}
 
 		static void SetupScriptableObject<T>(string path) where T : ScriptableObjectBase

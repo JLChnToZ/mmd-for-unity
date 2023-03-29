@@ -68,7 +68,7 @@ namespace MMD
                     motion_agent.CreateAnimationClip(pmdPrefab
                                                     , vmd_config.createAnimationFile
                                                     , vmd_config.interpolationQuality
-                                                    );
+                                                    , null);
                     message = "Loading done.";
                 }
                 GUI.enabled = gui_enabled_old;

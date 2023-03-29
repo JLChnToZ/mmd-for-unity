@@ -67,7 +67,7 @@ namespace MMD
         /// <returns>アセット保存先のパス</returns>
         public static string GetConfigPath()
         {
-            var path = AssetDatabase.GetAllAssetPaths().Where(item => item.Contains("Config.cs")).First();
+            var path = AssetDatabase.GetAllAssetPaths().Where(item => item.Contains("Config.cs") && AssetDatabase.LoadAssetAtPath<MonoScript>(item)?.GetClass() == typeof(Config)).First();
             path = path.Substring(0, path.LastIndexOf('/') + 1) + "Config.asset";
             return path;
         }
@@ -131,6 +131,7 @@ namespace MMD
         public PMXConverter.AnimationType animation_type = PMXConverter.AnimationType.LegacyAnimation;
         public bool rigidFlag = true;
         public bool use_ik = true;
+        [Range(0.001f, 1.0f)]
         public float scale = 0.085f;
         public bool is_pmx_base_import = true;
 

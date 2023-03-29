@@ -253,11 +253,7 @@ public class VMDLoaderScript {
 			buf[i] = bytes[i];
 		}
 
-#if UNITY_STANDALONE_OSX
 		buf = Encoding.Convert(Encoding.GetEncoding(932), Encoding.UTF8, buf);
-#else
-		buf = Encoding.Convert(Encoding.GetEncoding(0), Encoding.UTF8, buf);
-#endif
 		string result = Encoding.UTF8.GetString(buf);
 		if (null != line_feed_code) {
 			//改行コード統一(もしくは除去)

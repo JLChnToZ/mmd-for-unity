@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEditor.AssetImporters;
 using UnityEditor;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,7 +24,7 @@ public class AvatarSettingScript
 	/// <returns>アニメーター</returns>
 	public Animator SettingGenericAvatar() {
 		//アバタールートトランスフォームの取得
-		Transform avatar_root_transform = root_game_object_.transform.FindChild("Model");
+		Transform avatar_root_transform = root_game_object_.transform.Find("Model");
 		if (null == avatar_root_transform) {
 			//ルートゲームオブジェクト直下にモデルルートオブジェクトが無い(PMDConverter)なら
 			//ルートゲームオブジェクトをアバタールートオブジェクトとする
@@ -53,7 +54,7 @@ public class AvatarSettingScript
 		SetRequirePose();
 		
 		//アバタールートトランスフォームの取得
-		Transform avatar_root_transform = root_game_object_.transform.FindChild("Model");
+		Transform avatar_root_transform = root_game_object_.transform.Find("Model");
 		if (null == avatar_root_transform) {
 			//ルートゲームオブジェクト直下にモデルルートオブジェクトが無い(PMDConverter)なら
 			//ルートゲームオブジェクトをアバタールートオブジェクトとする
@@ -86,10 +87,11 @@ public class AvatarSettingScript
 	/// アバターをProjectに登録する
 	/// </summary>
 	/// <param name='file_path'>ファイルパス</param>
-	public void CreateAsset(string file_path)
+	public void CreateAsset(string file_path, AssetImportContext ctx)
 	{
 		if (avatar_) {
-			AssetDatabase.CreateAsset(avatar_, file_path);
+			if (ctx != null) ctx.AddObjectToAsset(file_path.Substring(file_path.LastIndexOf('/') + 1), avatar_);
+			else AssetDatabase.CreateAsset(avatar_, file_path);
 		} else {
 			throw new System.InvalidOperationException();
 		}
@@ -184,7 +186,7 @@ public class AvatarSettingScript
 			}
 			break;
 		default:
-			if (root_game_object_.transform.FindChild("Physics") == transform.parent) {
+			if (root_game_object_.transform.Find("Physics") == transform.parent) {
 				//物理演算ルートなら
 				//後ろを向いているので向き直す
 				transform.localRotation = Quaternion.Euler(0.0f, 180.0f, 0.0f);

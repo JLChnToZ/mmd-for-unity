@@ -1,5 +1,10 @@
 using UnityEngine;
 using UnityEditor;
+#if UNITY_2020_2_OR_NEWER
+using UnityEditor.AssetImporters;
+#else
+using UnityEditor.Experimental.AssetImporters;
+#endif
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -8,6 +13,7 @@ using System;
 
 namespace xfile {
 	public class XFileConverter {
+		AssetImportContext ctx;
 		string filePath;
 		string folderPath;
 		string fileName;
@@ -58,6 +64,18 @@ namespace xfile {
 			fileName = GetFileName();
 			
 			CreateFolder();
+			sr = new StreamReader(filePath);
+			matList = new MaterialList(sr);
+			
+			while (!sr.EndOfStream) {
+				Parser(sr.ReadLine());
+			}
+		}
+
+		public XFileConverter(AssetImportContext ctx) {
+			this.ctx = ctx;
+			filePath = this.ctx.assetPath;
+			
 			sr = new StreamReader(filePath);
 			matList = new MaterialList(sr);
 			
@@ -117,7 +135,8 @@ namespace xfile {
 			EntryUVForMesh(mesh);
 			EntrySubMeshForMesh(mesh);
 			EntryNormal(mesh);
-			AssetDatabase.CreateAsset(mesh, folderPath + fileName.Split('.')[0] + ".asset");
+			if (ctx != null) ctx.AddObjectToAsset(fileName.Split('.')[0], mesh);
+			else AssetDatabase.CreateAsset(mesh, folderPath + fileName.Split('.')[0] + ".asset");
 			return mesh;
 		}
 		
@@ -139,8 +158,8 @@ namespace xfile {
 			mat.SetColor("_Emission", source.EmissionColor);
 			mat.SetFloat("_Shiness", source.Specularity);
 			mat.name = this.fileName + "_" + source.Name;
-			
-			AssetDatabase.CreateAsset(mat, folderPath + "Materials/" + mat.name + ".asset");
+			if (ctx != null) ctx.AddObjectToAsset(mat.name, mat);
+			else AssetDatabase.CreateAsset(mat, folderPath + "Materials/" + mat.name + ".asset");
 			return mat;
 		}
 		
@@ -158,7 +177,11 @@ namespace xfile {
 			filter.mesh = mesh;
 			MeshRenderer mren = obj.AddComponent<MeshRenderer>();
 			mren.sharedMaterials = materials;
-			PrefabUtility.ReplacePrefab(obj, prefab);
+			if (ctx != null) {
+				ctx.AddObjectToAsset(fileName.Split('.')[0], obj);
+				ctx.SetMainObject(obj);
+			}
+			else PrefabUtility.ReplacePrefab(obj, prefab);
 		}
 	}
 }

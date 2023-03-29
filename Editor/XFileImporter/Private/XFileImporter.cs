@@ -1,4 +1,9 @@
 using UnityEngine;
+#if UNITY_2020_2_OR_NEWER
+using UnityEditor.AssetImporters;
+#else
+using UnityEditor.Experimental.AssetImporters;
+#endif
 using System.Collections;
 
 /*
@@ -20,8 +25,8 @@ using System.Collections;
  * Xファイルは方言が多いので、現在は1.のプラグインで出力したファイルのみ対応 
  */
 
-public class XFileImporter {
-	
+[ScriptedImporter(1, ".x")]
+public class XFileImporter : ScriptedImporter {
 	// Use this for initialization
 	public static void Import(Object xFile) {
 		xfile.XFileConverter cnv = new xfile.XFileConverter(xFile);
@@ -31,4 +36,11 @@ public class XFileImporter {
 		Mesh mesh = cnv.CreateMesh();
 		cnv.ReplacePrefab(prefab, mesh, material);
 	}
+
+  public override void OnImportAsset(AssetImportContext ctx) {
+		var cnv = new xfile.XFileConverter(ctx);
+		var material = cnv.CreateMaterials();
+		var mesh = cnv.CreateMesh();
+		cnv.ReplacePrefab(null, mesh, material);
+  }
 }
