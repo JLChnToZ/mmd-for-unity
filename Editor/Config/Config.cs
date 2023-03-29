@@ -174,6 +174,7 @@ namespace MMD
     public class VMDImportConfig : ConfigBase
     {
         public bool createAnimationFile = false;
+        [Range(1, 10)]
         public int interpolationQuality = 1;
 
         public override string GetTitle()
